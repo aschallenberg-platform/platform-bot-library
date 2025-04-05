@@ -1,9 +1,18 @@
 package de.aschallenberg.botclient.websocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.aschallenberg.botclient.bot.Bot;
+import de.aschallenberg.botclient.config.ConfigLoader;
+import de.aschallenberg.botclient.data.BotData;
 import de.aschallenberg.botclient.bot.BotRegistry;
+import de.aschallenberg.botclient.data.BotDataKeyDeserializer;
+import de.aschallenberg.botclient.data.GameData;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -12,7 +21,13 @@ import java.util.*;
 
 @Log4j2
 public final class WebSocketHandler extends WebSocketClient {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Marker PLATFORM_MARKER = MarkerManager.getMarker("Platform");
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        addMapperModules();
+    }
+
     private final Bot bot = BotRegistry.instantiateBot();
 
     public WebSocketHandler(URI serverUri) {
@@ -23,25 +38,34 @@ public final class WebSocketHandler extends WebSocketClient {
     public void onOpen(ServerHandshake handshakeData) {
         log.info("Connected to {}", getURI());
 
-        MessageSender.sendPlatformData(MessageType.REGISTER, null);
+        MessageSender.sendMessage(MessageType.REGISTER, ConfigLoader.get("platform.bot.token"));
     }
 
     @Override
     public synchronized void onMessage(String message) {
-        Map<String, Object> data = objectMapper.convertValue(message, Map.class);
-        MessageType type = MessageType.valueOf((String) data.get(MessageSender.TYPE_KEY));
+        log.info("DEBUG: Received {}", message);
 
-        log.info("Message received: {}", message);
+        Map<String, Object> data;
+        try {
+            data = OBJECT_MAPPER.readValue(message, Map.class);
+        } catch (JsonProcessingException e) {
+            log.error("Can't parse message: {}", e.getMessage());
+            return;
+        }
+        MessageType type = MessageType.valueOf((String) data.get(MessageSender.TYPE_KEY));
+        Object object = data.get(MessageSender.OBJECT_KEY); // null if the map doesn't have an object
+
+        log.info("Received [{}]: {}", type, message);
 
         switch (type) {
-            case REGISTER -> log.info("Successfully registered");
-            case START -> handleGameStart(data);
+            case ERROR -> bot.onError(OBJECT_MAPPER.convertValue(object, String.class));
+            case BOT_CLIENT_DISCONNECTED -> bot.onBotDisconnected(OBJECT_MAPPER.convertValue(object, BotData.class));
+            case REGISTER -> log.info(PLATFORM_MARKER, "Successfully registered");
+            case START -> bot.onGameStart(OBJECT_MAPPER.convertValue(object, GameData.class));
             case INTERRUPT -> bot.onGameInterrupt();
-            case FINISHED -> bot.onGameFinished();
-            default -> {
-                Map<String, Object> gameData = objectMapper.convertValue(data.get(MessageSender.GAME_DATA_KEY), Map.class);
-                bot.onDataReceived(gameData);
-            }
+            case FINISHED -> bot.onGameFinished(OBJECT_MAPPER.convertValue(object, new TypeReference<>() {}));
+            case GAME_INTERNAL -> bot.onMessageReceived(object);
+            case MOVE -> bot.onMove(object);
         }
     }
 
@@ -55,12 +79,11 @@ public final class WebSocketHandler extends WebSocketClient {
         log.error(ex.getMessage());
     }
 
-    private void handleGameStart(Map<String, Object> data) {
-        String game = (String) data.get("game");
-        String module = (String) data.get("module");
-        String version = (String) data.get("version");
-        Map<String, Object> settings = (Map<String, Object>) data.get("settings");
+    private static void addMapperModules() {
+        SimpleModule module = new SimpleModule();
 
-        bot.onGameStart(game, module, version, settings);
+        module.addKeyDeserializer(BotData.class, new BotDataKeyDeserializer());
+
+        OBJECT_MAPPER.registerModule(module);
     }
 }

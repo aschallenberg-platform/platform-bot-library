@@ -1,78 +1,44 @@
 package de.aschallenberg.botclient;
 
 import de.aschallenberg.botclient.bot.Bot;
+import de.aschallenberg.botclient.data.BotData;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.Map;
 
 @Slf4j
 public class TicTacToeBot extends Bot {
     @Override
     public void onGameStart() {
-        log.info("Started game: {}", getGameName());
+        log.info("Started game: {}", getGameData().getName());
     }
 
     @Override
-    public void onDataReceived(Map<String, Object> data) {
-        String type = (String) data.get("type");
+    public void onMove(Object object) {
+        Move move = jsonObjectMapper.convertValue(object, Move.class);
 
-        if(data.containsKey("error")) {
-            log.error("Error: {}", data.get("error"));
-        }
-
-        switch (type) {
-            case "move_request" -> move((int[]) data.get("board"), (int) data.get("player"));
-            case "game_over" -> gameOver(data);
-            default -> log.warn("Unknown message type: {}", type);
-        }
-
-    }
-
-    @Override
-    public void onGameInterrupt() {
-        log.info("Game was interrupted: {}", getGameName());
-    }
-
-    @Override
-    public void onGameFinished() {
-        log.info("Game finished: {}", getGameName());
-    }
-
-    private void gameOver(Map<String, Object> data) {
-        String result = (String) data.get("result");
-
-        if(result.equals("draw")) {
-            log.info("Game ended in a draw");
-        } else if(result.equals("win")) {
-            if(data.get("winner").equals(getBotToken())) {
-                log.info("You won the game");
-            } else {
-                log.info("You lost the game");
-            }
-        }
-
-    }
-
-    private void move(int[] board, int player) {
-        int opponent = (player == 1) ? 2 : 1;
+        int[] board = move.getBoard();
+        int player = move.getPlayer();
+        int opponent = (move.getPlayer() == 1) ? 2 : 1;
 
         // 1. Gewinnzug suchen
         int bestMove = findWinningMove(board, player);
         if (bestMove != -1) {
-            sendData(Map.of("move_response", bestMove));
+            sendMove(bestMove);
             return;
         }
 
         // 2. Gegnerischen Gewinn verhindern
         bestMove = findWinningMove(board, opponent);
         if (bestMove != -1) {
-            sendData(Map.of("move_response", bestMove));
+            sendMove(bestMove);
             return;
         }
 
         // 3. Zentrum bevorzugen
         if (board[4] == 0) {
-            sendData(Map.of("move_response", 4));
+            sendMove(4);
             return;
         }
 
@@ -80,7 +46,7 @@ public class TicTacToeBot extends Bot {
         int[] corners = {0, 2, 6, 8};
         for (int corner : corners) {
             if (board[corner] == 0) {
-                sendData(Map.of("move_response", corner));
+                sendMove(corner);
                 return;
             }
         }
@@ -88,11 +54,34 @@ public class TicTacToeBot extends Bot {
         // 5. Seiten oder erstes freies Feld nehmen
         for (int i = 0; i < 9; i++) {
             if (board[i] == 0) {
-                sendData(Map.of("move_response", i));
+                sendMove(i);
                 return;
             }
         }
     }
+
+    @Override
+    public void onMessageReceived(Object object) {
+
+    }
+
+    @Override
+    public void onGameInterrupt() {}
+
+    @Override
+    public void onGameFinished(Map<BotData, Object> scores) {
+        log.info("Game finished");
+
+        int myScore = jsonObjectMapper.convertValue(scores.get(getMyBotData()), Integer.class);
+        switch (myScore) {
+            case 0 -> log.info("Lost the game! :(");
+            case 1 -> log.info("It's a draw! :|");
+            case 2 -> log.info("Won the game! :)");
+        }
+    }
+
+    @Override
+    public void resetBot() {}
 
     // Hilfsmethode: Prüft, ob es einen Gewinnzug gibt
     private int findWinningMove(int[] board, int player) {

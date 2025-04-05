@@ -2,52 +2,52 @@ package de.aschallenberg.botclient.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.aschallenberg.botclient.config.ConfigLoader;
+import de.aschallenberg.botclient.data.BotData;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Log4j2
 @UtilityClass
 public class MessageSender {
-    static final String BOT_TOKEN_KEY = "bot_token";
+    static final String OBJECT_KEY = "object";
     static final String TYPE_KEY = "type";
-    static final String GAME_DATA_KEY = "game_data";
+    static final String SENDER_KEY = "sender";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static WebSocketHandler webSocketHandler;
 
-    public static void sendGameData(@NonNull Map<String, Object> data) {
-        sendData(MessageType.GAME_INTERNAL, data);
+    public static void sendMessage(@NonNull MessageType type) {
+        sendMessage(Map.of(
+                TYPE_KEY, type
+        ));
     }
 
-    static void sendPlatformData(@NonNull MessageType type, Map<String, Object> data) {
-        sendData(type, data);
+    public static void sendMessage(@NonNull MessageType type, @NonNull Object object) {
+        sendMessage(Map.of(
+                TYPE_KEY, type,
+                OBJECT_KEY, object
+        ));
     }
 
-    static void sendData(MessageType type, Map<String, Object> gameData) {
-        Map<String, Object> data = new HashMap<>();
+    public static void sendMessage(@NonNull MessageType type, @NonNull Object object, @NonNull BotData sender) {
+        sendMessage(Map.of(
+                TYPE_KEY, type,
+                OBJECT_KEY, object,
+                SENDER_KEY, sender
+        ));
+    }
 
-        data.put(TYPE_KEY, type.name());
-        data.put(BOT_TOKEN_KEY, ConfigLoader.get("plattform.bot.token"));
-
-        if (type == MessageType.GAME_INTERNAL) {
-            data.put(GAME_DATA_KEY, gameData);
-        }
-
-        String dataString;
+    private static void sendMessage(Map<String, Object> data) {
         try {
-            dataString = OBJECT_MAPPER.writeValueAsString(data);
+            webSocketHandler.send(OBJECT_MAPPER.writeValueAsString(data));
+            log.info("Sent [{}]: {}", data.get(TYPE_KEY), data);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("'data' could not be converted to JSON: " + e.getMessage());
+            throw new IllegalArgumentException("'object' could not be converted to JSON: " + e.getMessage(), e);
         }
-
-        log.info("Sending data: {}", dataString);
-        webSocketHandler.send(dataString);
     }
 
     static void setWebSocketHandler(WebSocketHandler webSocketHandler) {

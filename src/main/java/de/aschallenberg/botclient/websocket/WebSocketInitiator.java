@@ -29,10 +29,14 @@ public class WebSocketInitiator {
      * </p>
      */
     public static void initConnection()  {
+        initConnection(true);
+    }
+
+    public static void initConnection(boolean interruptOnFailure) {
         ConfigLoader.load();
 
-        String host = ConfigLoader.get("plattform.host");
-        String port = ConfigLoader.get("plattform.port");
+        String host = ConfigLoader.get("platform.host");
+        String port = ConfigLoader.get("platform.port");
 
         WebSocketHandler client = new WebSocketHandler(URI.create(String.format(WS_URI_FORMAT, host, port)));
         MessageSender.setWebSocketHandler(client);
@@ -41,8 +45,12 @@ public class WebSocketInitiator {
             // Establish connection synchronously
             client.connectBlocking();
         } catch (InterruptedException e) {
-            log.warn(e.getMessage());
-            Thread.currentThread().interrupt();
+            if(interruptOnFailure) {
+                log.warn(e.getMessage());
+                System.exit(1);
+            } else {
+                log.warn("Cannot connect to the platform");
+            }
         }
     }
 }
