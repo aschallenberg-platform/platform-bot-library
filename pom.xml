@@ -9,11 +9,22 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
+    <name>Platform Bot Client</name>
+    <url>https://maven.apache.org</url>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub aschallenberg Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/aschallenberg/platform-bot-library</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
