@@ -16,7 +16,7 @@ public class ConfigLoader {
             PROPERTIES.load(ConfigLoader.class.getClassLoader().getResourceAsStream(CONFIG_FILE));
             log.info("Loaded configuration from {}", CONFIG_FILE);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("Missing {} file. Please read the README.md!", CONFIG_FILE);
         }
     }
 
