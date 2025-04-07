@@ -69,10 +69,10 @@ public class TicTacToeBot extends Bot {
     public void onGameInterrupt() {}
 
     @Override
-    public void onGameFinished(Map<BotData, Object> scores) {
+    public void onGameFinished(Map<BotData, Integer> scores) {
         log.info("Game finished");
 
-        int myScore = jsonObjectMapper.convertValue(scores.get(getMyBotData()), Integer.class);
+        int myScore = scores.get(getMyBotData());
         switch (myScore) {
             case 0 -> log.info("Lost the game! :(");
             case 1 -> log.info("It's a draw! :|");

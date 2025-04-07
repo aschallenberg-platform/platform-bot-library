@@ -72,7 +72,7 @@ public abstract class Bot {
     /**
      * Abstract method to be implemented by subclasses to define behavior when the game finishes.
      */
-    public abstract void onGameFinished(Map<BotData, Object> scores);
+    public abstract void onGameFinished(Map<BotData, Integer> scores);
 
     /**
      * Logs an error to the console. Can be overridden to handle specific errors.
