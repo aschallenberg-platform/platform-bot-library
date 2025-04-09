@@ -17,7 +17,7 @@ public class WebSocketInitiator {
      * specified in the configuration.
      * </p>
      */
-    private static final String WS_URI_FORMAT = "ws://%s:%s/ws/bot";
+    private static final String WS_ENDPOINT = "/ws/bot";
 
     /**
      * Initializes the WebSocket connection.
@@ -38,7 +38,7 @@ public class WebSocketInitiator {
         String host = ConfigLoader.get("platform.host");
         String port = ConfigLoader.get("platform.port");
 
-        WebSocketHandler client = new WebSocketHandler(URI.create(String.format(WS_URI_FORMAT, host, port)));
+        WebSocketHandler client = new WebSocketHandler(getWsUri());
         MessageSender.setWebSocketHandler(client);
 
         try {
@@ -52,5 +52,31 @@ public class WebSocketInitiator {
                 log.warn("Cannot connect to the platform");
             }
         }
+    }
+
+    private URI getWsUri() {
+        String host = ConfigLoader.get("platform.host");
+        String port = ConfigLoader.get("platform.port");
+        boolean ssl = Boolean.parseBoolean(ConfigLoader.get("platform.ssl"));
+
+        StringBuilder uriStringBuilder = new StringBuilder();
+
+        uriStringBuilder
+                .append(ssl ? "wss" : "ws")
+                .append("://")
+                .append(host);
+
+        if(port != null && !port.isBlank()) {
+            uriStringBuilder
+                    .append(":")
+                    .append(port);
+        }
+
+        uriStringBuilder
+                .append(WS_ENDPOINT);
+
+        System.out.println(uriStringBuilder);
+
+        return URI.create(uriStringBuilder.toString());
     }
 }
