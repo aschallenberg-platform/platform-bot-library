@@ -22,7 +22,7 @@
         <repository>
             <id>github</id>
             <name>GitHub aschallenberg Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/aschallenberg/platform-bot-library</url>
+            <url>https://maven.pkg.github.com/aschallenberg-platform/platform-bot-library</url>
         </repository>
     </distributionManagement>
 
