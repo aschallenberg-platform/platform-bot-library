@@ -60,23 +60,12 @@ public class WebSocketInitiator {
         boolean ssl = Boolean.parseBoolean(ConfigLoader.get("platform.ssl"));
 
         StringBuilder uriStringBuilder = new StringBuilder();
-
-        uriStringBuilder
-                .append(ssl ? "wss" : "ws")
-                .append("://")
-                .append(host);
+        uriStringBuilder.append(ssl ? "wss" : "ws").append("://").append(host);
 
         if(port != null && !port.isBlank()) {
-            uriStringBuilder
-                    .append(":")
-                    .append(port);
+            uriStringBuilder.append(":").append(port);
         }
 
-        uriStringBuilder
-                .append(WS_ENDPOINT);
-
-        System.out.println(uriStringBuilder);
-
-        return URI.create(uriStringBuilder.toString());
+        return URI.create(uriStringBuilder.append(WS_ENDPOINT).toString());
     }
 }
