@@ -28,29 +28,15 @@ public class WebSocketInitiator {
      * message and re-interrupts the current thread.
      * </p>
      */
-    public static void initConnection()  {
-        initConnection(true);
-    }
-
-    public static void initConnection(boolean interruptOnFailure) {
-        ConfigLoader.load();
-
-        String host = ConfigLoader.get("platform.host");
-        String port = ConfigLoader.get("platform.port");
-
+    public static void initConnection() {
         WebSocketHandler client = new WebSocketHandler(getWsUri());
         MessageSender.setWebSocketHandler(client);
 
         try {
-            // Establish connection synchronously
-            client.connectBlocking();
+            client.connectBlocking(); // Establish connection synchronously
         } catch (InterruptedException e) {
-            if(interruptOnFailure) {
-                log.warn(e.getMessage());
-                System.exit(1);
-            } else {
-                log.warn("Cannot connect to the platform");
-            }
+            log.warn(e.getMessage());
+            System.exit(1);
         }
     }
 

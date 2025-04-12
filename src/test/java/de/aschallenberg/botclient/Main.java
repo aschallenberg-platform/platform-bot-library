@@ -7,6 +7,7 @@ import de.aschallenberg.botclient.websocket.WebSocketInitiator;
 public class Main {
     public static void main(String[] args) {
         BotRegistry.setBotClass(TicTacToeBot.class);
+        ConfigLoader.load(args);
         WebSocketInitiator.initConnection();
     }
 }
