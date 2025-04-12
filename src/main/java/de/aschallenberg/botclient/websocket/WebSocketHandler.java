@@ -61,7 +61,7 @@ public final class WebSocketHandler extends WebSocketClient {
             case ERROR -> bot.onError(OBJECT_MAPPER.convertValue(object, String.class));
             case BOT_CLIENT_DISCONNECTED -> bot.onBotDisconnected(OBJECT_MAPPER.convertValue(object, BotData.class));
             case REGISTER -> log.info(PLATFORM_MARKER, "Successfully registered");
-            case START -> bot.onGameStart(OBJECT_MAPPER.convertValue(object, GameData.class));
+            case START -> handleStart(object);
             case INTERRUPT -> bot.onGameInterrupt();
             case FINISHED -> bot.onGameFinished(OBJECT_MAPPER.convertValue(object, new TypeReference<>() {}));
             case GAME_INTERNAL -> bot.onMessageReceived(object);
@@ -85,5 +85,14 @@ public final class WebSocketHandler extends WebSocketClient {
         module.addKeyDeserializer(BotData.class, new BotDataKeyDeserializer());
 
         OBJECT_MAPPER.registerModule(module);
+    }
+
+    private void handleStart(Object object) {
+        HashMap<String, Object> data = OBJECT_MAPPER.convertValue(object, new TypeReference<>(){});
+
+        bot.onGameStart(
+                OBJECT_MAPPER.convertValue(data.get("gameData"), GameData.class),
+                OBJECT_MAPPER.convertValue(data.get("botData"), BotData.class)
+        );
     }
 }

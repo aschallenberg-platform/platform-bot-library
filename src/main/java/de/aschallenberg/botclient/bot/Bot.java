@@ -37,15 +37,9 @@ public abstract class Bot {
      *
      * @param gameData The data associated with the current game.
      */
-    public final void onGameStart(GameData gameData) {
-        UUID myToken = UUID.fromString(ConfigLoader.get("platform.bot.token"));
-
+    public final void onGameStart(GameData gameData, BotData myBotData) {
         this.gameData = gameData;
-        this.myBotData = gameData.getBots()
-                .stream()
-                .filter(bot -> bot.getToken().equals(myToken))
-                .findFirst()
-                .orElseThrow();
+        this.myBotData = myBotData;
 
         onGameStart();
     }
