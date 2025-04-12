@@ -66,6 +66,7 @@ public final class WebSocketHandler extends WebSocketClient {
             case FINISHED -> bot.onGameFinished(OBJECT_MAPPER.convertValue(object, new TypeReference<>() {}));
             case GAME_INTERNAL -> bot.onMessageReceived(object);
             case MOVE -> bot.onMove(object);
+            case DISQUALIFY -> bot.onDisqualify(OBJECT_MAPPER.convertValue(object, BotData.class));
         }
     }
 

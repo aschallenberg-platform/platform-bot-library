@@ -98,6 +98,25 @@ public abstract class Bot {
     }
 
     /**
+     * Handles the disqualification of a bot.
+     * <p>
+     * If the current bot is disqualified, it resets the bot's state and logs an error message.
+     * Otherwise, it logs an informational message about the disqualified bot.
+     * </p>
+     * Can be overwritten for handle a disqualification more specifically.
+     *
+     * @param bot The bot that was disqualified.
+     */
+    public void onDisqualify(BotData bot) {
+        if(bot.equals(myBotData)) {
+            resetBot();
+            log.error("I was disqualified");
+        } else {
+            log.info("Bot {} from {} was disqualified", bot.getName(), bot.getOwnerName());
+        }
+    }
+
+    /**
      * Sends a move message to the game
      * <p>
      * This method sends a message of type MOVE to the platform, including the specified object. The platform will

@@ -8,5 +8,6 @@ public enum MessageType {
     INTERRUPT,
     FINISHED,
     GAME_INTERNAL,
-    MOVE
+    MOVE,
+    DISQUALIFY
 }
