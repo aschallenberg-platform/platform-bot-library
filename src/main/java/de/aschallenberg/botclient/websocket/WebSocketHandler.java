@@ -61,13 +61,28 @@ public final class WebSocketHandler extends WebSocketClient {
             case ERROR -> bot.onError(OBJECT_MAPPER.convertValue(object, String.class));
             case BOT_CLIENT_DISCONNECTED -> bot.onBotDisconnected(OBJECT_MAPPER.convertValue(object, BotData.class));
             case REGISTER -> log.info(PLATFORM_MARKER, "Successfully registered");
-            case START -> handleStart(object);
-            case INTERRUPT -> bot.onGameInterrupt();
-            case FINISHED -> bot.onGameFinished(OBJECT_MAPPER.convertValue(object, new TypeReference<>() {}));
+            case LOBBY_START -> handleLobbyStart(object);
+            case GAME_START -> handleStart(object);
+            case LOBBY_INTERRUPT -> handleLobbyInterrupt(object);
+            case GAME_INTERRUPT -> bot.onGameInterrupt();
+            case LOBBY_FINISHED -> handleLobbyFinished(object);
+            case GAME_FINISHED -> bot.onGameFinished(OBJECT_MAPPER.convertValue(object, new TypeReference<>() {}));
             case GAME_INTERNAL -> bot.onMessageReceived(object);
             case MOVE -> bot.onMove(object);
             case DISQUALIFY -> bot.onDisqualify(OBJECT_MAPPER.convertValue(object, BotData.class));
         }
+    }
+
+    private void handleLobbyStart(final Object object) {
+        log.warn("Not implemented yet");
+    }
+
+    private void handleLobbyInterrupt(final Object object) {
+        log.warn("Not implemented yet");
+    }
+
+    private void handleLobbyFinished(final Object object) {
+        log.warn("Not implemented yet");
     }
 
     @Override
