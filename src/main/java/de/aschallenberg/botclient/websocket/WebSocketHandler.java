@@ -8,7 +8,6 @@ import de.aschallenberg.botclient.bot.Bot;
 import de.aschallenberg.botclient.config.ConfigLoader;
 import de.aschallenberg.botclient.data.BotData;
 import de.aschallenberg.botclient.bot.BotRegistry;
-import de.aschallenberg.botclient.data.BotDataKeyDeserializer;
 import de.aschallenberg.botclient.data.GameData;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Marker;
@@ -18,15 +17,12 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Log4j2
 public final class WebSocketHandler extends WebSocketClient {
     private static final Marker PLATFORM_MARKER = MarkerManager.getMarker("Platform");
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    static {
-        addMapperModules();
-    }
 
     private final Bot bot = BotRegistry.instantiateBot();
 
@@ -63,10 +59,12 @@ public final class WebSocketHandler extends WebSocketClient {
             case REGISTER -> log.info(PLATFORM_MARKER, "Successfully registered");
             case LOBBY_START -> handleLobbyStart(object);
             case GAME_START -> handleStart(object);
+            case STAGE_START -> log.warn("Not implemented yet");
             case LOBBY_INTERRUPT -> handleLobbyInterrupt(object);
             case GAME_INTERRUPT -> bot.onGameInterrupt();
             case LOBBY_FINISHED -> handleLobbyFinished(object);
-            case GAME_FINISHED -> bot.onGameFinished(OBJECT_MAPPER.convertValue(object, new TypeReference<>() {}));
+            case GAME_FINISHED -> handleGameFinished(object);
+            case STAGE_FINISHED -> handleStageFinished(object);
             case GAME_INTERNAL -> bot.onMessageReceived(object);
             case MOVE -> bot.onMove(object);
             case DISQUALIFY -> bot.onDisqualify(OBJECT_MAPPER.convertValue(object, BotData.class));
@@ -85,6 +83,28 @@ public final class WebSocketHandler extends WebSocketClient {
         log.warn("Not implemented yet");
     }
 
+    private void handleGameFinished(final Object object) {
+        Map<String, Integer> stringMap = OBJECT_MAPPER.convertValue(object, new TypeReference<>() {});
+        Map<BotData, Integer> scores = new HashMap<>();
+
+        stringMap.forEach((key, value) -> {
+	        try {
+		        scores.put(
+		                BotData.fromMap(OBJECT_MAPPER.readValue(key, new TypeReference<>() {})),
+		                value
+		        );
+	        } catch (JsonProcessingException e) {
+		        throw new RuntimeException(e);
+	        }
+        });
+
+        bot.onGameFinished(scores);
+    }
+
+    private void handleStageFinished(final Object object) {
+        log.warn("Not implemented yet");
+    }
+
     @Override
     public void onClose(int code, String reason, boolean remote) {
         log.warn("Connection closed ({}): {}", code, reason);
@@ -93,14 +113,6 @@ public final class WebSocketHandler extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
         log.error(ex.getMessage());
-    }
-
-    private static void addMapperModules() {
-        SimpleModule module = new SimpleModule();
-
-        module.addKeyDeserializer(BotData.class, new BotDataKeyDeserializer());
-
-        OBJECT_MAPPER.registerModule(module);
     }
 
     private void handleStart(Object object) {
