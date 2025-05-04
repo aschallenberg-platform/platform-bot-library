@@ -1,16 +1,16 @@
 package de.aschallenberg.botclient.bot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.aschallenberg.botclient.config.ConfigLoader;
-import de.aschallenberg.botclient.data.BotData;
-import de.aschallenberg.botclient.data.GameData;
 import de.aschallenberg.botclient.websocket.MessageSender;
-import de.aschallenberg.botclient.websocket.MessageType;
+import de.aschallenberg.middleware.dto.BotData;
+import de.aschallenberg.middleware.dto.GameData;
+import de.aschallenberg.middleware.messages.Payload;
+import de.aschallenberg.middleware.messages.payloads.GameUpdatePayload;
+import de.aschallenberg.middleware.messages.payloads.MovePayload;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
-import java.util.UUID;
 
 
 @Log4j2
@@ -52,16 +52,29 @@ public abstract class Bot {
     /**
      * Abstract method to be implemented by subclasses to define behavior when a move is made.
      *
-     * @param object The object representing the move.
+     * @param move The move.
      */
-    public abstract void onMove(Object object);
+    public abstract void onMoveReceived(final Object move);
 
     /**
-     * Abstract method to be implemented by subclasses to define behavior when a message is received.
+     * Called when the platform forwards an update message from the game to this bot. This method is used to handle any
+     * incoming data for actions that are not a move or start.
+     * Please look up if you need this method in the game description on the platform.
      *
-     * @param object The object representing data.
+     * @param gameUpdateData The game update data.
      */
-    public abstract void onMessageReceived(Object object);
+    public void onGameUpdateReceived(final Object gameUpdateData) {}
+
+    /**
+     * Handles the reception of self-created messages from the game.
+     * <p>
+     * Self-created messages are described in the game description on the platform. Only use this method if the game
+     * defines it in its description.
+     * </p>
+     *
+     * @param payload The payload of the unknown message.
+     */
+    public void onOtherMessageReceived(final Payload payload) {}
 
     /**
      * Abstract method to be implemented by subclasses to define behavior when the game finishes.
@@ -73,6 +86,7 @@ public abstract class Bot {
      */
     public void onError(String error) {
         log.error(error);
+        System.exit(2);
     }
 
     /**
@@ -123,24 +137,37 @@ public abstract class Bot {
      * forward it to the game.
      * </p>
      *
-     * @param object The object representing the move.
+     * @param value The value representing the move.
      */
-    protected void sendMove(Object object) {
-        MessageSender.sendMessage(MessageType.MOVE, object, myBotData);
+    protected void sendMove(Object value) {
+        MessageSender.sendMessage(new MovePayload<>(value));
     }
 
     /**
-     * Sends a message to the game.
+     * Sends a game update to the game.
      * <p>
-     * This method sends a message of type GAME_INTERNAL to the platform, including the specified object. The platform
+     * This method sends a game update message to the game (via the platform), including the specified object.
+     * Please check the game flow in the game details on the platform.
+     * </p>
+     *
+     * @param object The object to be sent in the message.
+     */
+    protected final void sendGameUpdate(@NonNull Object object) {
+        MessageSender.sendMessage(new GameUpdatePayload<>(object));
+    }
+
+    /**
+     * Sends a self-created message to the game.
+     * <p>
+     * This method sends a self-created message to the game (via the platform), including the specified object. The platform
      * will forward it to the game.
      * It also logs the message if the logMessage parameter is true. Please check the game flow in the game details
      * on the platform.
      * </p>
      *
-     * @param object     The object to be sent in the message.
+     * @param payload The object to be sent in the message.
      */
-    protected final void sendMessage(@NonNull Object object) {
-        MessageSender.sendMessage(MessageType.GAME_INTERNAL, object, myBotData);
+    protected final void sendOtherMessage(@NonNull Payload payload) {
+        MessageSender.sendMessage(payload);
     }
 }
