@@ -53,6 +53,10 @@ public final class WebSocketHandler extends WebSocketClient {
             return;
         }
 
+        if (MessageSender.DEBUG) {
+            log.info("Received: {}", message);
+        }
+
         switch (message.getPayload()) {
             case final ErrorPayload payload -> handleError(message, payload);
             case final BotClientDisconnectPayload payload -> handleBotClientDisconnected(message, payload);
