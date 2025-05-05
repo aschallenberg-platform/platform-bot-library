@@ -105,6 +105,15 @@ public final class WebSocketHandler extends WebSocketClient {
             @NonNull final RegisterResponsePayload payload
     ) {
         log.info(PLATFORM_MARKER, "Successfully registered");
+
+        // Join a lobby if a lobby code is given
+        String lobbyJoinCodeString = ConfigLoader.get("platform.lobby.join.code");
+
+        if(lobbyJoinCodeString != null && !lobbyJoinCodeString.isBlank()) {
+            UUID lobbyJoinCode = UUID.fromString(lobbyJoinCodeString);
+
+            MessageSender.sendMessage(new LobbyJoinPayload(lobbyJoinCode));
+        }
     }
 
     private void handleGameStart(

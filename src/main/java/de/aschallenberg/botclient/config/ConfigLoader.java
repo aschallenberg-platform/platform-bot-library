@@ -18,6 +18,7 @@ public class ConfigLoader {
         ARG_TO_PROPERTY_KEY.put("port", "platform.port");
         ARG_TO_PROPERTY_KEY.put("ssl", "platform.ssl");
         ARG_TO_PROPERTY_KEY.put("token", "platform.bot.token");
+        ARG_TO_PROPERTY_KEY.put("lobby", "platform.lobby.join.code");
     }
 
     private ConfigLoader() {}
@@ -37,6 +38,7 @@ public class ConfigLoader {
      *                 <li>port: Overrides the platform port.</li>
      *                 <li>ssl: Enables or disables SSL for the platform.</li>
      *                 <li>token: Sets the bot token for the platform.</li>
+     *                 <li>lobby: Sets the lobby code to join the corresponding lobby.</li>
      *             </ul>
      */
     public static void load(String[] args) {
