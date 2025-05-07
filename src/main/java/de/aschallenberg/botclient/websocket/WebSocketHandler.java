@@ -76,6 +76,7 @@ public final class WebSocketHandler extends WebSocketClient {
             case final GameUpdatePayload<?> payload -> handleGameUpdate(message, payload);
             case final MovePayload<?> payload -> handleMove(message, payload);
             case final DisqualifyPayload payload -> handleDisqualify(message, payload);
+            case final TimeoutPayload payload -> ignore();
             default -> handleUnknownMessage(message);
         }
     }
