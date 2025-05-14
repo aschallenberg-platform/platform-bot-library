@@ -139,7 +139,7 @@ public abstract class Bot {
      *
      * @param value The value representing the move.
      */
-    protected void sendMove(Object value) {
+    protected final void sendMove(Object value) {
         MessageSender.sendMessage(new MovePayload<>(value));
     }
 
