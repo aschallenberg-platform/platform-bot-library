@@ -1,16 +1,13 @@
 package de.aschallenberg.botclient.websocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.aschallenberg.botclient.bot.Bot;
-import de.aschallenberg.botclient.config.ConfigLoader;
 import de.aschallenberg.botclient.bot.BotRegistry;
-import de.aschallenberg.middleware.dto.BotData;
-import de.aschallenberg.middleware.dto.GameData;
-import de.aschallenberg.middleware.messages.Message;
-import de.aschallenberg.middleware.messages.Payload;
-import de.aschallenberg.middleware.messages.payloads.*;
+import de.aschallenberg.botclient.config.ConfigLoader;
+import de.aschallenberg.communication.messages.Message;
+import de.aschallenberg.communication.messages.Payload;
+import de.aschallenberg.communication.messages.payloads.*;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Marker;
@@ -19,7 +16,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-import java.util.*;
+import java.util.UUID;
 
 @Log4j2
 public final class WebSocketHandler extends WebSocketClient {
