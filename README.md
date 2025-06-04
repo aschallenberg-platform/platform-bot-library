@@ -36,7 +36,6 @@ Ihr Programm benötigt eine `main`-Methode. Es wird empfohlen, diese in einer ei
 
 ```java
 ConfigLoader.load(args);
-
 ```
 Wichtig ist auch, dass Sie Ihre Hauptklasse registrieren. Das machen Sie mit:
 
@@ -54,6 +53,7 @@ Ihre `main`-Methode sollte jetzt in etwa so aussehen:
 
 ```java
 public static void main(String[] args) {
+    ConfigLoader.load(args);
     BotRegistry.setBotClass(<Ihre Hauptklasse>.class);
     WebSocketInitiator.initConnection();
 }
