@@ -1,7 +1,9 @@
+
 # Platform Bot Library
 
-## Einbinden
-Füge folgende dependency in die pom.xml deines Maven Projekts hinzu:
+## Einbinden  
+Fügen Sie folgende Dependency in die `pom.xml` Ihres Maven-Projekts ein:
+
 ```xml
 <dependency>
   <groupId>de.aschallenberg</groupId>
@@ -10,45 +12,57 @@ Füge folgende dependency in die pom.xml deines Maven Projekts hinzu:
 </dependency>
 ```
 
-Beachte, dass die Library Java 21 benutzt.
+Beachten Sie, dass die Library Java 21 verwendet.
 
-## Anfangen den Bot zu schreiben
+## Anfangen, den Bot zu schreiben
 
-Du brauchst primär drei Dinge um einen Bot zu schreiben: eine main-Methode, eine (Haupt-)Klasse für deinen Bot und eine
-config-Datei.
+Sie benötigen primär drei Dinge, um einen Bot zu schreiben: eine `main`-Methode, eine (Haupt-)Klasse für Ihren Bot und eine Konfigurationsdatei.
 
-## config-Datei
-Die config Datei musst du als `config.properties` in `src/main/resources` anlegen. Sie muss folgendes beinhalten:
+## Konfigurationsdatei  
+Die Konfigurationsdatei müssen Sie als `config.properties` in `src/main/resources` anlegen. Sie muss Folgendes beinhalten:
+
 ```
-platform.host=<IP-Adresse der Platform zu der du dich verbinden möchtest>
-platform.port=<Port der Plattform zu der du dich verbinden möchtest>
-platform.bot.token=<Der Bot-Token, den du von der Bot-Registrierung auf der Plattform bekommst>
+platform.host=<IP-Adresse der Plattform, zu der Sie sich verbinden möchten>
+platform.port=<Port der Plattform, zu der Sie sich verbinden möchten>
+platform.bot.token=<Der Bot-Token, den Sie von der Bot-Registrierung auf der Plattform erhalten>
 ```
 
-## (Haupt-)Klasse
-Du musst eine Klasse für deinen Bot anlegen, die von `de.aschallenberg.botclient.bot.Bot` erben muss. Du wirst einige
-Methoden implementieren müssen. Sie sind die Schnittstelle zur Plattform und zum Spiel was du spielen möchtest.
+## (Haupt-)Klasse  
+Sie müssen eine Klasse für Ihren Bot anlegen, die von `de.aschallenberg.botclient.bot.Bot` erbt.  
+Sie werden einige Methoden implementieren müssen. Diese sind die Schnittstelle zur Plattform und zu dem Spiel, das Sie spielen möchten.
 
-## main-Methode
-Dein Programm braucht eine main-Methode. Ich empfehle, diese in einer eigenen Klasse `Main` anzulegen, du kannst sie
-aber auch überall anders implementieren. Wichtig ist, dass du deine Hauptklasse registrierst. Das machst du mit
-`BotRegistry.setBotClass(<Deine Hauptklasse>.class)`. **Danach** musst du die Library dazu auffordern, eine WebSocket-
-Verbindung zur Plattform aufzubauen. Dies funktioniert mit dem Befehl `WebSocketInitiator.initConnection()`.
-Deine main- Methode sollte jetzt in etwa so aussehen:
+## Main-Methode  
+Ihr Programm benötigt eine `main`-Methode. Es wird empfohlen, diese in einer eigenen Klasse `Main` anzulegen. Sie können sie jedoch auch an anderer Stelle implementieren. Zunächst muss die Konfigurations-Datei geladen werden. Dies geschieht mit
+
+```java
+ConfigLoader.load(args);
+
+```
+Wichtig ist auch, dass Sie Ihre Hauptklasse registrieren. Das machen Sie mit:
+
+```java
+BotRegistry.setBotClass(<Ihre Hauptklasse>.class);
+```
+
+**Danach** müssen Sie die Library dazu auffordern, eine WebSocket-Verbindung zur Plattform aufzubauen. Dies funktioniert mit dem Befehl:
+
+```java
+WebSocketInitiator.initConnection();
+```
+
+Ihre `main`-Methode sollte jetzt in etwa so aussehen:
+
 ```java
 public static void main(String[] args) {
-	BotRegistry.setBotClass(<Deine Hauptklasse>.class);
-	WebSocketInitiator.initConnection();
+    BotRegistry.setBotClass(<Ihre Hauptklasse>.class);
+    WebSocketInitiator.initConnection();
 }
 ```
 
+Wenn Sie alle drei Komponenten haben und diese korrekt konfiguriert sind, sollte der Bot beim Starten eine WebSocket-Verbindung zur Plattform aufbauen und sich dort registrieren. Sie sollten dann in der Konsole etwas sehen wie  
+„Successfully registered“. Der Bot ist nun online und Sie können mit ihm theoretisch Lobbies beitreten und die vorgesehenen Spiele spielen.  
+Jedoch wird das zu Fehlern führen, da Sie ihn bis jetzt noch nicht implementiert haben.
 
-Wenn du alle drei Komponenten hast und korrekt konfiguriert hast, dann sollte der Bot beim Starten eine WebSocket-
-Verbindung zur Plattform aufbauen und sich dort registrieren. Du solltest dann in der Konsole etwas sehen wie
-"Successfully registered". Der Bot ist nun online und du kannst mit ihm theoretisch in Lobbies beitreten und die 
-vorgesehenen Spiele spielen. Jedoch wird das zu Fehlern führen, da du ihn bis jetzt noch nicht implementiert hast.
-
-## Implementierung
-Die vom `Bot` überschriebenen Methoden musst du jetzt implementieren. Je nach Spiel musst du mehr oder weniger Methoden
-implementieren. Den Rest kannst du einfach leer lassen. Bitte beachte genau auf die Implementierungsangaben des Spiels.
-Ein falscher Typ der gesendet wird, kann im schlimmsten Fall zum Spielabbruch führen.
+## Implementierung  
+Die vom `Bot` überschriebenen Methoden müssen Sie nun implementieren. Je nach Spiel müssen Sie mehr oder weniger Methoden implementieren. Den Rest können Sie einfach leer lassen.  
+Bitte beachten Sie genau die Implementierungsangaben des Spiels. Ein falscher Typ, der gesendet wird, kann im schlimmsten Fall zum Spielabbruch führen.
